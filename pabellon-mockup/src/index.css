@@ -1,0 +1,190 @@
+/* ===== Reset & variables ===== */
+:root{
+  --red:#dc2626; --red-dark:#b91c1c; --bg:#f6f7f9; --text:#0f172a;
+  --muted:#6b7280; --card:#ffffff; --shadow:0 8px 18px rgba(0,0,0,.08);
+  --radius:16px;
+}
+*{box-sizing:border-box}
+html,body,#root{height:100%}
+body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; color:var(--text); background:var(--bg)}
+.container{max-width:1200px; margin:0 auto; padding:0 24px}
+
+/* ===== Header ===== */
+.header{position:sticky; top:0; background:#fff; box-shadow:var(--shadow); z-index:10}
+.header__inner{display:flex; align-items:center; justify-content:space-between; padding:14px 0}
+.logo{color:var(--red); margin:0; font-weight:800}
+.nav a{margin:0 14px; text-decoration:none; color:#111827}
+.nav a:hover{color:var(--red)}
+.btn{border:0; padding:10px 16px; border-radius:10px; cursor:pointer; font-weight:600}
+.btn--primary{background:var(--red); color:#fff}
+.btn--primary:hover{background:var(--red-dark)}
+.btn--light{background:#fff; color:var(--red)}
+.btn--ghost{background:#fff; border:1px solid #e5e7eb}
+
+/* ===== Hero ===== */
+.hero{height:460px; background-size:cover; background-position:center; display:grid; place-items:center}
+.hero__overlay{background:rgba(0,0,0,.45); padding:28px; border-radius:16px; color:#fff; text-align:center; width:min(95%, 1000px)}
+.hero h2{margin:0 0 14px; font-size:34px}
+
+/* ===== SearchBar (input + sugerencias) ===== */
+.searchbar{display:flex; gap:10px; background:#fff; border-radius:12px; padding:10px; box-shadow:var(--shadow)}
+.searchbar input{flex:1; border:0; outline:none; padding:12px 10px; background:#fff; border-radius:8px; min-width:420px}
+.suggest{position:absolute; margin-top:8px; background:#fff; border-radius:12px; box-shadow:var(--shadow); width:min(95%, 600px); text-align:left; overflow:hidden}
+.suggest__item{display:flex; gap:10px; align-items:center; padding:10px 12px; cursor:pointer}
+.suggest__item.is-active, .suggest__item:hover{background:#f3f4f6}
+.tag{font-size:12px; padding:2px 8px; border-radius:12px; background:#e5e7eb; color:#374151}
+.tag--comuna{background:#e0f2fe; color:#0c4a6e}
+.tag--proyecto{background:#fee2e2; color:#7f1d1d}
+
+/* ===== Filters ===== */
+.filterbar{display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:10px; margin:16px 0}
+.filterbar select{width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:10px; background:#fff}
+
+/* ===== Grid / Cards ===== */
+.section{padding:38px 0}
+.section__head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px}
+.grid{display:grid; gap:18px}
+.grid--4{grid-template-columns:repeat(4,1fr)}
+.card{background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; transition:.2s; cursor:pointer}
+.card--hover:hover{transform:translateY(-3px); box-shadow:0 12px 24px rgba(0,0,0,.12)}
+.card__imgwrap{position:relative}
+.card__img{width:100%; height:190px; object-fit:cover; display:block}
+.badge{position:absolute; bottom:10px; left:10px; background:rgba(0,0,0,.7); color:#fff; padding:6px 10px; border-radius:10px; font-size:12px}
+.card__body{padding:14px}
+.card__title{margin:0 0 6px}
+.muted{color:var(--muted)}
+.card__actions{margin-top:8px}
+
+/* ===== CTA ===== */
+.cta{background:var(--red); color:#fff; padding:40px 0; margin-top:12px}
+.cta__inner{text-align:center; max-width:800px}
+
+/* ===== Footer ===== */
+.footer{background:#0b1220; color:#cbd5e1; margin-top:28px; padding-top:30px}
+.footer__grid{display:grid; gap:24px; grid-template-columns:2fr 1fr 1fr}
+.footer h4{color:#fff; margin:0 0 8px}
+.links{list-style:none; padding:0; margin:0}
+.links li{margin-bottom:6px}
+.links a, .social a{color:#cbd5e1; text-decoration:none}
+.links a:hover, .social a:hover{color:#fff}
+.copy{text-align:center; color:#94a3b8; margin:16px 0; padding-bottom:20px}
+
+/* ===== Util ===== */
+.empty{padding:28px; background:#fff; border-radius:12px; text-align:center; color:#6b7280}
+
+/* === Modal centrado arriba con scroll interno === */
+.modal__backdrop{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  z-index: 999;  /* por encima del header/footer */
+}
+
+.modal{
+  position: fixed;
+  left: 50%;
+  top: 6vh;                     /* cerca del tope (antes era 50%) */
+  transform: translateX(-50%);  /* solo centramos en X */
+  width: min(1100px, 94vw);
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 18px 48px rgba(0,0,0,.25);
+  z-index: 1000;
+  max-height: 88vh;             /* altura máxima visible */
+  overflow: auto;               /* scroll dentro del modal */
+}
+
+/* cabecera fija dentro del modal (opcional: mantiene visible título/CTA) */
+.modal__head{
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 2;
+}
+
+/* galería */
+.modal__img{
+  width: 100%;
+  height: 320px;          /* un poco más baja para que no “empuje” */
+  object-fit: cover;
+  display: block;
+}
+
+/* miniaturas horizontales, con scroll suave */
+.thumbs{
+  display: flex;
+  gap: 8px;
+  padding: 10px 18px;
+  overflow-x: auto;
+}
+.thumb{
+  width: 72px; height: 50px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  flex: 0 0 auto;
+  background: #fff;
+  cursor: pointer;
+}
+.thumb img{ width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb.is-active{ outline: 2px solid var(--red); }
+
+/* columnas de la ficha */
+.modal__cols{
+  display: grid;
+  grid-template-columns: 3fr 1.2fr; /* izquierda (contenido) / derecha (contacto) */
+  gap: 18px;
+  padding: 16px 18px;
+}
+
+/* CTA inferior “flotante” dentro del modal (opcional) */
+.modal__cta{
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  border-top: 1px solid #eceff3;
+  padding: 12px 18px;
+  display: flex;
+  gap: 10px;
+  z-index: 2;
+}
+
+/* mejora barras de scroll del modal (opcional) */
+.modal::-webkit-scrollbar { width: 10px; }
+.modal::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 6px; }
+.modal::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+/* Responsive simple */
+@media (max-width: 900px){
+  .modal{ top: 3vh; width: 96vw; }
+  .modal__cols{ grid-template-columns: 1fr; }
+}
+
+
+/* thumbs */
+.thumbs{display:flex; gap:8px; padding:10px 18px 0; overflow:auto}
+.thumb{border:0; padding:0; background:transparent; border-radius:10px; overflow:hidden; cursor:pointer}
+.thumb img{display:block; width:72px; height:54px; object-fit:cover}
+.thumb.is-active{outline:2px solid #dc2626}
+
+/* chips / bullets / map placeholder */
+.chips{display:flex; flex-wrap:wrap; gap:8px}
+.chip{background:#f3f4f6; color:#111827; padding:6px 10px; border-radius:999px; font-size:13px}
+.bullets{padding-left:18px; margin:0}
+.mapbox{height:200px; background:#f1f5f9; border-radius:12px; display:grid; place-items:center}
+
+
+/* ===== Formulario (ficha) ===== */
+.form{display:grid; gap:10px}
+.form__row{display:grid; gap:6px}
+.input{
+  width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:10px;
+  background:#fff; outline:none;
+}
+.input:focus{border-color:#cbd5e1; box-shadow:0 0 0 3px rgba(203,213,225,.35)}
+.input.is-invalid{border-color:#dc2626; box-shadow:0 0 0 3px rgba(220,38,38,.15)}
+.error{color:#dc2626; font-size:12px}
+.notice{
+  padding:10px 12px; border-radius:10px; font-size:14px;
+  border:1px solid #c7f9d4; background:#ecfdf5; color:#065f46;
+}
