@@ -6,6 +6,8 @@ import SearchBar from "./components/SearchBar";
 import FilterBar from "./components/FilterBar";
 import FichaProyecto from "./components/FichaProyecto";
 import { track } from "./utils/tracking";
+import { notifyFavsChanged } from "./utils/favs";
+
 
 // Hook: búsqueda + filtros + orden + paginación + favoritos
 function useBuscar(proyectosInput) {
@@ -41,6 +43,7 @@ function useBuscar(proyectosInput) {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
       localStorage.setItem("favs", JSON.stringify([...next]));
+      notifyFavsChanged();
       return next;
     });
   }, []);
