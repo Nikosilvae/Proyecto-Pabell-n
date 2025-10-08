@@ -1,15 +1,16 @@
 // src/index.js
-import React from "react";
-import { createRoot } from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
-import App from "./App";
-import "./App.css";
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+// Ya no necesitamos BrowserRouter aquí
+import App from './App';
+import './index.css';
 
-const container = document.getElementById("root");
-const root = createRoot(container);
-
+const root = createRoot(document.getElementById('root'));
 root.render(
-  <BrowserRouter>
+  <React.StrictMode>
+    {/* Renderizamos App directamente. 
+      El <HashRouter> que está dentro de App.js se encargará de todo.
+    */}
     <App />
-  </BrowserRouter>
+  </React.StrictMode>
 );

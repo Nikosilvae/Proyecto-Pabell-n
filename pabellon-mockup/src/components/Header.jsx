@@ -1,15 +1,13 @@
+// src/components/Header.jsx
 import React, { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import { getFavCounts } from "../utils/favs";
 import { toggleSidebar } from "../utils/sidebar"; 
 
 export default function Header() {
   const [favTotal, setFavTotal] = useState(0);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(
-    () => typeof document !== "undefined" && document.body.classList.contains("sidebar-collapsed")
-  );
 
-  // contador de favoritos
+  // Efecto para actualizar el contador de favoritos
   useEffect(() => {
     const refresh = () => setFavTotal(getFavCounts().total);
     refresh();
@@ -21,35 +19,35 @@ export default function Header() {
     };
   }, []);
 
-  // toggle sidebar
-  const toggleSidebar = () => {
-    document.body.classList.toggle("sidebar-collapsed");
-    setSidebarCollapsed(document.body.classList.contains("sidebar-collapsed"));
-  };
-
   return (
-    <>
-      <header className="header">
-        <div className="container header__inner">
+    <header className="header">
+      <div className="container header__inner">
+        <div className="header__left">
+          {/* Botón de menú (hamburguesa) para abrir/cerrar el sidebar */}
+          <button
+            className="header__menuBtn"
+            aria-label="Abrir o cerrar menú"
+            title="Menú"
+            onClick={toggleSidebar}
+          >
+            ☰
+          </button>
           <h1 className="logo">
-            <NavLink to="/" className="logo__link">Pabellón.cl</NavLink>
+            <Link to="/" className="logo__link">Pabellón.cl</Link>
           </h1>
+        </div>
 
-          <nav className="nav">
-            <NavLink to="/proyectos" className={({isActive})=> isActive ? "is-active" : ""}>Proyectos</NavLink>
-            <NavLink to="/subsidios" className={({isActive})=> isActive ? "is-active" : ""}>Subsidios</NavLink>
-            <NavLink to="/inmobiliarias" className={({isActive})=> isActive ? "is-active" : ""}>Inmobiliarias</NavLink>
-            <NavLink to="/noticias" className={({isActive})=> isActive ? "is-active" : ""}>Noticias</NavLink>
+        {/* --- El elemento <nav> ha sido eliminado --- */}
 
-            {/* Favoritos con contador */}
-            <NavLink
-              to="/favoritos"
-              className={({isActive}) => `fav-link ${isActive ? "is-active" : ""}`}
-              title="Ver favoritos"
-            >
-              Favoritos <span className="fav-count">{favTotal}</span>
-            </NavLink>
-          </nav>
+        <div className="header__actions">
+          {/* Muevo el enlace de Favoritos aquí para que siga visible */}
+          <NavLink to="/favoritos" className="btn btn--ghost">
+            Favoritos ({favTotal})
+          </NavLink>
+          
+          <NavLink to="/publicar-propiedad" className="btn btn--ghost">
+            Publicar Propiedad
+          </NavLink>
 
           <a
             className="btn btn--primary"
@@ -60,19 +58,7 @@ export default function Header() {
             Ingresar
           </a>
         </div>
-      </header>
-
-      {/* Botón flotante para abrir/cerrar el menú lateral */}
-      <button
-        className="sidebar__fab"
-        type="button"
-        aria-label="Abrir o cerrar menú lateral"
-        aria-pressed={sidebarCollapsed ? "true" : "false"}
-        onClick={toggleSidebar}
-        title={sidebarCollapsed ? "Mostrar menú" : "Ocultar menú"}
-      >
-        ☰
-      </button>
-    </>
+      </div>
+    </header>
   );
 }

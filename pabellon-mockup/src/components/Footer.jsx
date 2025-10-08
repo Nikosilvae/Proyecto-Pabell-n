@@ -20,11 +20,21 @@ export default function Footer() {
           </ul>
         </div>
         <div>
-          <h4>Síguenos</h4>
+          <h4>Síguenos y Contacto</h4> {/* Actualicé el título para incluir Contacto */}
           <div className="social">
-            <a href="#!">Facebook</a>
-            <a href="#!">Instagram</a>
-            <a href="#!">YouTube</a>
+            <a href="https://www.facebook.com/tu-usuario" target="_blank" rel="noopener noreferrer">
+              Facebook
+            </a>
+            <a href="https://www.instagram.com/tu-usuario" target="_blank" rel="noopener noreferrer">
+              Instagram
+            </a>
+            <a href="https://www.youtube.com/tu-canal" target="_blank" rel="noopener noreferrer">
+              YouTube
+            </a>
+            {/* --- ENLACE DE WHATSAPP AÑADIDO --- */}
+            <a href="https://wa.me/56900000000" target="_blank" rel="noopener noreferrer">
+              WhatsApp
+            </a>
           </div>
         </div>
       </div>

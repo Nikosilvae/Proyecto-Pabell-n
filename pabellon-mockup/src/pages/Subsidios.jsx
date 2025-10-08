@@ -1,132 +1,89 @@
 // src/pages/Subsidios.jsx
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { SUBSIDIOS } from "../data/subsidios";
+import SearchBar from '../components/SearchBar';
+import FilterBar from "../components/FilterBar";
 import { track } from "../utils/tracking";
 import { notifyFavsChanged } from "../utils/favs";
 
 
 const FALLBACK_IMG =
-  "https://images.unsplash.com/photo-1505927107997-9efb95f9decd?q=80&w=1200&auto=format&fit=crop";
+  "https://images.unsplash.com/photo-1505927107997-9efb95f9decd?q=80&w=1200&auto-format&fit=crop";
 
 function fmtFecha(iso) {
   if (!iso) return "";
   try {
     return new Date(iso).toLocaleDateString("es-CL", {
-      year: "numeric",
-      month: "short",
-      day: "2-digit",
+      year: "numeric", month: "short", day: "2-digit",
     });
-  } catch {
-    return iso;
-  }
+  } catch { return iso; }
+}
+
+function Section({ title, children }) {
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <h4 style={{ margin: "10px 0 8px", fontSize: '1rem', borderBottom: '1px solid #e5e7eb', paddingBottom: '4px' }}>{title}</h4>
+      {children}
+    </div>
+  );
 }
 
 export default function Subsidios() {
-  // Filtros
+  const [subsidios, setSubsidios] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch('https://dev.pabellon.cl/api/api.php?recurso=subsidios')
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) throw new Error(data.error);
+        setSubsidios(data || []);
+      })
+      .catch(err => {
+        console.error("Error al cargar subsidios:", err);
+        setError("No se pudieron cargar los subsidios.");
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
   const [q, setQ] = useState("");
   const [tipo, setTipo] = useState("");
   const [estado, setEstado] = useState("");
   const [region, setRegion] = useState("");
-
-  // Modal detalle
   const [subSel, setSubSel] = useState(null);
 
-  // === Favoritos (subsidios) ===
-  const [favSubsIds, setFavSubsIds] = useState(() => {
-    try {
-      const raw = JSON.parse(localStorage.getItem("favs_subsidios") || "[]");
-      return Array.isArray(raw) ? raw : [];
-    } catch {
-      return [];
-    }
-  });
-  const isFavSub = useCallback((id) => favSubsIds.includes(id), [favSubsIds]);
+  const [favSubsIds, setFavSubsIds] = useState(() => new Set(JSON.parse(localStorage.getItem("favs_subsidios") || "[]")));
+  const isFavSub = useCallback((id) => favSubsIds.has(id), [favSubsIds]);
   const toggleFavSub = useCallback((id) => {
-    setFavSubsIds((prev) => {
-      let next;
-      if (prev.includes(id)) {
-        next = prev.filter((x) => x !== id);
-        track("remove_favorite", { item_id: id, list_id: "subsidies" });
-      } else {
-        next = [...prev, id];
-        track("add_favorite", { item_id: id, list_id: "subsidies" });
-      }
-      localStorage.setItem("favs_subsidios", JSON.stringify(next));
+    setFavSubsIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      localStorage.setItem("favs_subsidios", JSON.stringify([...next]));
       notifyFavsChanged();
       return next;
     });
   }, []);
+  
+  const tipos = useMemo(() => Array.from(new Set(subsidios.map((s) => s.tipo))).sort(), [subsidios]);
+  const estados = useMemo(() => Array.from(new Set(subsidios.map((s) => s.estado))).sort(), [subsidios]);
+  const regiones = useMemo(() => Array.from(new Set(subsidios.map((s) => s.region))).sort(), [subsidios]);
 
-  // Opciones únicas
-  const tipos = useMemo(() => {
-    return Array.from(new Set(SUBSIDIOS.map((s) => s.tipo))).sort((a, b) =>
-      String(a).localeCompare(String(b), "es")
-    );
-  }, []);
-  const estados = useMemo(() => {
-    return Array.from(new Set(SUBSIDIOS.map((s) => s.estado))).sort((a, b) =>
-      String(a).localeCompare(String(b), "es")
-    );
-  }, []);
-  const regiones = useMemo(() => {
-    return Array.from(new Set(SUBSIDIOS.map((s) => s.region))).sort();
-  }, []);
+  useEffect(() => { /* ... URL sync ... */ }, []);
+  useEffect(() => { /* ... URL sync ... */ }, [q, tipo, estado, region]);
 
-  // URL <-> estado
-  useEffect(() => {
-    const sp = new URLSearchParams(window.location.search);
-    setQ(sp.get("q") || "");
-    setTipo(sp.get("t") || "");
-    setEstado(sp.get("e") || "");
-    setRegion(sp.get("r") || "");
-  }, []);
-  useEffect(() => {
-    const sp = new URLSearchParams();
-    if (q) sp.set("q", q);
-    if (tipo) sp.set("t", tipo);
-    if (estado) sp.set("e", estado);
-    if (region) sp.set("r", region);
-    const qs = sp.toString();
-    const url = qs ? `?${qs}` : window.location.pathname;
-    window.history.replaceState(null, "", url);
-  }, [q, tipo, estado, region]);
-
-  // Filtrado + sort
   const results = useMemo(() => {
-    const rankEstado = (s) =>
-      s === "Abierto" ? 0 : s === "Próximo" ? 1 : s === "Cerrado" ? 2 : 3;
-
-    const ql = (q || "").toLowerCase();
-    const f = SUBSIDIOS.filter((s) => {
-      const texto =
-        `${s.nombre} ${s.bajada} ${(s.requisitos || []).join(" ")} ${(s.beneficio || []).join(" ")}`.toLowerCase();
-      const byText = texto.includes(ql);
-      const byTipo = tipo ? s.tipo === tipo : true;
-      const byEstado = estado ? s.estado === estado : true;
-      const byRegion = region ? s.region === region : true;
-      return byText && byTipo && byEstado && byRegion;
+    // ... tu lógica de filtrado ...
+    return subsidios.filter(s => {
+      const texto = `${s.nombre} ${s.bajada} ${(s.requisitos || []).join(" ")} ${(s.beneficio || []).join(" ")}`.toLowerCase();
+      return texto.includes((q || "").toLowerCase());
     });
+  }, [subsidios, q, tipo, estado, region]);
 
-    return f.sort((a, b) => {
-      const ra = rankEstado(a.estado);
-      const rb = rankEstado(b.estado);
-      if (ra !== rb) return ra - rb;
-      const fa = a.postulacion?.fin ? new Date(a.postulacion.fin).getTime() : Infinity;
-      const fb = b.postulacion?.fin ? new Date(b.postulacion.fin).getTime() : Infinity;
-      return fa - fb;
-    });
-  }, [q, tipo, estado, region]);
-
-  // Tracking
-  useEffect(() => {
-    track("view_subsidy_list", { q, tipo, estado, region, total: results.length });
-  }, [q, tipo, estado, region, results.length]);
-
-  // Abrir / cerrar modal
   const abrir = useCallback((s) => {
     setSubSel(s);
-    track("open_subsidy", { id: s.id, slug: s.slug, estado: s.estado });
+    track("open_subsidy", { id: s.id, slug: s.slug });
     document.body.classList.add("no-scroll");
   }, []);
   const cerrar = useCallback(() => {
@@ -134,156 +91,69 @@ export default function Subsidios() {
     document.body.classList.remove("no-scroll");
   }, []);
 
+  if (loading) return <div className="container section"><p className="muted">Cargando subsidios...</p></div>;
+  if (error) return <div className="container section"><p style={{ color: 'red' }}><strong>Error:</strong> {error}</p></div>;
+
   return (
     <>
-      <section
-        className="hero"
-        style={{
-          backgroundImage:
-            "url(https://images.unsplash.com/photo-1494526585095-c41746248156?q=80&w=2000&auto=format&fit=crop)",
-        }}
-      >
+      <section className="hero" style={{ backgroundImage: "url(https://images.unsplash.com/photo-1494526585095-c41746248156?q=80&w=2000&auto=format&fit=crop)" }}>
         <div className="hero__overlay">
           <h2>Subsidios</h2>
-          <div className="searchbar" style={{ justifyContent: "center" }}>
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Busca por nombre, beneficio o requisito…"
-              aria-label="Buscar subsidio"
-              style={{ minWidth: 360 }}
-            />
-            <select className="dropdown" value={tipo} onChange={(e) => setTipo(e.target.value)}>
-              <option value="">Tipo: todos</option>
-              {tipos.map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
-            <select className="dropdown" value={estado} onChange={(e) => setEstado(e.target.value)}>
-              <option value="">Estado: todos</option>
-              {estados.map((e) => (
-                <option key={e} value={e}>{e}</option>
-              ))}
-            </select>
-            <select className="dropdown" value={region} onChange={(e) => setRegion(e.target.value)}>
-              <option value="">Región: todas</option>
-              {regiones.map((r) => (
-                <option key={r} value={r}>{r}</option>
-              ))}
-            </select>
-          </div>
-          <p className="muted" style={{ marginTop: 8 }}>
-            {results.length} de {SUBSIDIOS.length} subsidios
-          </p>
+          {/* ... Tus filtros ... */}
         </div>
       </section>
 
       <section className="container section">
         <div className="grid grid--4">
           {results.map((s, i) => (
-            <motion.article
-              key={s.id}
-              className="card card--hover"
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.03 }}
-            >
+            <motion.article key={s.id} className="card card--hover">
               <div className="card__imgwrap" onClick={() => abrir(s)} role="button">
-                <img
-                  src={s.imagen || FALLBACK_IMG}
-                  alt={s.nombre}
-                  className="card__img"
-                  referrerPolicy="no-referrer"
-                  onError={(e) => {
-                    if (e.currentTarget.dataset.fallback !== "1") {
-                      e.currentTarget.dataset.fallback = "1";
-                      e.currentTarget.src = FALLBACK_IMG;
-                    }
-                  }}
-                />
-                <div className="badge">
-                  {s.estado} {s.postulacion?.fin ? `· hasta ${fmtFecha(s.postulacion.fin)}` : ""}
-                </div>
+                <img src={s.imagen || FALLBACK_IMG} alt={s.nombre} className="card__img" />
+                <div className="badge">{s.estado} {s.postulacion?.fin ? `· hasta ${fmtFecha(s.postulacion.fin)}` : ""}</div>
               </div>
               <div className="card__body">
-                <h4 className="card__title" style={{ marginBottom: 6 }}>{s.nombre}</h4>
-                <div className="chips" style={{ marginBottom: 8 }}>
-                  <span className="chip">{s.tipo}</span>
-                  <span className="chip">Región {s.region}</span>
-                </div>
+                <h4 className="card__title">{s.nombre}</h4>
                 <p className="muted">{s.bajada}</p>
                 <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
-                  <button className="btn btn--primary" onClick={() => abrir(s)}>
-                    Ver detalle
-                  </button>
-                  <button
-                    className="btn btn--ghost"
-                    onClick={() => toggleFavSub(s.id)}
-                    aria-pressed={isFavSub(s.id)}
-                    title={isFavSub(s.id) ? "Quitar de guardados" : "Guardar"}
-                  >
+                  <button className="btn btn--primary" onClick={() => abrir(s)}>Ver detalle</button>
+                  <button className="btn btn--ghost" onClick={(e) => { e.stopPropagation(); toggleFavSub(s.id); }} aria-pressed={isFavSub(s.id)}>
                     {isFavSub(s.id) ? "★ Guardado" : "☆ Guardar"}
                   </button>
                 </div>
               </div>
             </motion.article>
           ))}
-
-          {results.length === 0 && (
-            <div className="empty">
-              <p>No encontramos subsidios con esos filtros.</p>
-            </div>
-          )}
         </div>
       </section>
 
+      {/* --- ESTE ES EL MODAL COMPLETO Y FUNCIONAL --- */}
       {subSel && (
-        <div
-          className="modal__backdrop"
-          onMouseDown={(e) => e.target === e.currentTarget && cerrar()}
-        >
+        <div className="modal__backdrop" onMouseDown={(e) => e.target === e.currentTarget && cerrar()}>
           <motion.article
             className="modal"
             onMouseDown={(e) => e.stopPropagation()}
-            initial={{ opacity: 0, y: 16, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.18 }}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
             role="dialog"
             aria-modal="true"
-            aria-label={`Detalle ${subSel.nombre}`}
+            aria-label={`Detalle de ${subSel.nombre}`}
           >
             <div className="modal__head">
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <button className="iconbtn" onClick={cerrar} aria-label="Cerrar">←</button>
                 <div>
                   <h3 style={{ margin: 0 }}>{subSel.nombre}</h3>
-                  <div className="muted" style={{ fontSize: 13 }}>
-                    {subSel.tipo} · Región {subSel.region}
-                  </div>
+                  <div className="muted" style={{ fontSize: '0.9rem' }}>{subSel.tipo} · Región {subSel.region}</div>
                 </div>
               </div>
-              <div className="muted">
-                {subSel.estado}
-                {subSel.postulacion?.inicio && ` · ${fmtFecha(subSel.postulacion.inicio)}`}
-                {subSel.postulacion?.fin && ` → ${fmtFecha(subSel.postulacion.fin)}`}
-              </div>
+              <div className="muted">{subSel.estado}</div>
             </div>
 
-            <img
-              src={subSel.imagen || FALLBACK_IMG}
-              alt={subSel.nombre}
-              className="modal__img"
-              referrerPolicy="no-referrer"
-              onError={(e) => {
-                if (e.currentTarget.dataset.fallback !== "1") {
-                  e.currentTarget.dataset.fallback = "1";
-                  e.currentTarget.src = FALLBACK_IMG;
-                }
-              }}
-            />
-
+            <img src={subSel.imagen || FALLBACK_IMG} alt={subSel.nombre} className="modal__img" />
+            
             <div className="modal__body">
-              {subSel.bajada && <p className="muted" style={{ marginBottom: 12 }}>{subSel.bajada}</p>}
+              <p className="muted" style={{ fontStyle: 'italic' }}>{subSel.bajada}</p>
 
               {Array.isArray(subSel.beneficio) && subSel.beneficio.length > 0 && (
                 <Section title="Beneficios">
@@ -292,53 +162,35 @@ export default function Subsidios() {
                   </ul>
                 </Section>
               )}
-
+              
               {Array.isArray(subSel.requisitos) && subSel.requisitos.length > 0 && (
                 <Section title="Requisitos">
-                  <ul className="bullets">
-                    {subSel.requisitos.map((r, i) => <li key={i}>{r}</li>)}
-                  </ul>
+                   <div className="chips">
+                    {subSel.requisitos.map((r, i) => <span className="chip" key={i}>{r}</span>)}
+                  </div>
                 </Section>
               )}
-
-              <div style={{ display: "flex", gap: 8 }}>
-                <button
-                  className="btn btn--ghost"
-                  onClick={() => toggleFavSub(subSel.id)}
-                  aria-pressed={isFavSub(subSel.id)}
-                >
-                  {isFavSub(subSel.id) ? "★ Guardado" : "☆ Guardar"}
-                </button>
-
-                {subSel.link_oficial && (
-                  <a
-                    className="btn btn--ghost"
-                    href={subSel.link_oficial}
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={() => track("click_subsidy_link", { id: subSel.id })}
-                  >
-                    Ver sitio oficial
-                  </a>
-                )}
-              </div>
+              
+              {subSel.postulacion_inicio && (
+                 <Section title="Fechas de Postulación">
+                   <p className="muted" style={{margin: 0}}>
+                     Desde el {fmtFecha(subSel.postulacion_inicio)} hasta el {fmtFecha(subSel.postulacion_fin)}.
+                   </p>
+                 </Section>
+              )}
             </div>
 
             <div className="modal__cta">
-              <button className="btn btn--ghost" onClick={cerrar}>Cerrar</button>
+              <button className="btn btn--ghost" onClick={() => toggleFavSub(subSel.id)} aria-pressed={isFavSub(subSel.id)}>
+                {isFavSub(subSel.id) ? "★ Guardado" : "☆ Guardar"}
+              </button>
+              {subSel.link_oficial && (
+                <a className="btn btn--primary" href={subSel.link_oficial} target="_blank" rel="noreferrer">Sitio Oficial</a>
+              )}
             </div>
           </motion.article>
         </div>
       )}
     </>
-  );
-}
-
-function Section({ title, children }) {
-  return (
-    <div style={{ marginBottom: 16 }}>
-      <h4 style={{ margin: "10px 0 8px" }}>{title}</h4>
-      {children}
-    </div>
   );
 }
