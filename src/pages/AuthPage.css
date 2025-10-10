@@ -1,0 +1,181 @@
+/* src/pages/AuthPage.css */
+
+/* ... (El resto de los estilos como .auth-form-container, .input, etc., se mantienen igual) ... */
+.auth-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+  width: 100%;
+  background-color: #fff;
+}
+
+
+/* --- SECCIÓN ACTUALIZADA PARA EL SLIDER --- */
+.auth-branding {
+  position: relative;
+  display: flex;
+  color: #fff;
+}
+
+.auth-swiper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.auth-slide-image {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+}
+
+/* Contenido que va sobre el slider */
+.auth-branding-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 3rem;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.1));
+}
+
+.auth-branding-content h1, 
+.auth-branding-content p {
+  text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+}
+
+.auth-branding-content h1 {
+  font-size: 2.5rem;
+  margin: 0;
+}
+.auth-branding-content p {
+    font-size: 1.1rem;
+    margin-top: 0.5rem;
+    max-width: 400px;
+}
+/* --- FIN DE LA SECCIÓN ACTUALIZADA --- */
+
+
+/* --- Columna del Formulario (Derecha) --- */
+.auth-form-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.auth-form-wrapper {
+  max-width: 400px;
+  width: 100%;
+}
+
+.auth-form-wrapper h2 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: #1a202c;
+}
+
+.auth-form-wrapper .subtitle {
+  margin-bottom: 2rem;
+  color: #718096;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #4a5568;
+}
+
+.input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+}
+
+.auth-message {
+    text-align: center;
+    padding: 0.75rem;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+}
+.auth-message.error {
+    background-color: #fed7d7;
+    color: #c53030;
+}
+.auth-message.success {
+    background-color: #c6f6d5;
+    color: #2f855a;
+}
+
+.auth-switch-link {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: #718096;
+}
+
+.auth-switch-link a {
+  color: var(--primary-color);
+  font-weight: 600;
+  text-decoration: none;
+}
+.auth-switch-link a:hover {
+  text-decoration: underline;
+}
+
+/* --- Responsive para móviles --- */
+@media (max-width: 992px) {
+  .auth-container {
+    grid-template-columns: 1fr;
+  }
+  .auth-branding {
+    display: none; /* Ocultamos la imagen en móviles para dar espacio al formulario */
+  }
+  .auth-form-container {
+      min-height: 100vh;
+  }
+}
+
+/* --- Estilos para el botón de mostrar/ocultar contraseña --- */
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #718096;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.25rem;
+}
+
+.password-toggle-btn:hover {
+  color: #2d3748;
+}
