@@ -21,3 +21,6 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Ignorar credenciales de la base de datos
+pabellon-api/db.php
